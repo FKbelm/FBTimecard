@@ -17,6 +17,7 @@
     <!-- <script defer src="/__/firebase/5.10.0/firebase-storage.js"></script> -->
     <!-- initialize the SDK after all desired features are loaded -->
     <script defer src="/__/firebase/init.js"></script>
+    <script defer src="./extend.js"></script>
 
     <style media="screen">
         body {
@@ -68,15 +69,25 @@
 
                     // Initialize Cloud Firestore through Firebase
                     const db = firebase.firestore();
-                    const timecards = await db.collection("users").doc(user.uid).collection("timecards").orderBy("createdAt").get();
-                    timecards.forEach(doc => {
+                    const timecardRefs = await db.collection("users").doc(user.uid).collection("timecards").orderBy("createdAt").get();
+                    const timecards = [];
+
+                    timecardRefs.forEach(doc => {
                         const data = doc.data();
+                        timecards.push(data);
+                        console.log(doc.id, " => ", data);
+                    });
+
+                    timecards.forEach(data => {
                         const li = document.createElement("li");
                         li.classList.add("timecard");
                         li.innerHTML = `${data.type} at ${new Date(data.createdAt.seconds * 1000).toLocaleString()}`;
                         document.getElementById("timecards").appendChild(li);
-                        console.log(doc.id, " => ", doc.data());
                     });
+
+                    if (typeof extendTimecards === typeof Function) {
+                        extendTimecards(timecards);
+                    }
 
                     document.getElementById('loader').innerHTML = "Loaded!";
                 });
